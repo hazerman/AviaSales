@@ -1,0 +1,20 @@
+{
+  "author": "hazerman",
+  "name": "aviasales",
+  "version": "0.1.0",
+  "private": true,
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "devDependencies": {
+    "eslint": "6.8.x",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1"
+  },
+  "scripts": {
+    "test": "eslint js/"
+  },
+  "license": "ISC"
+}
