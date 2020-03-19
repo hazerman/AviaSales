@@ -1,4 +1,11 @@
 
+const PROXY = 'https://cors-anywhere.herokuapp.com/';
+const AVIASALES_JSON_SERVER = 'http://api.travelpayouts.com/data/ru/cities.json';
+const AVIASALES_JSON = '../database/cities.json';
+const SECRET_KEY = 'da69997ffdd4a869ab4b4f86b68527fb';
+const PRICE_CALENDAR = 'http://min-prices.aviasales.ru/calendar_preload';
+const HOMEWORK_GET = 'http://min-prices.aviasales.ru/calendar_preload?origin=SVX&destination=KGD&depart_date=2020-05-25';
+
 const formSearch = document.querySelector('.form-search');
 const inputCitiesFrom = formSearch.querySelector('.input__cities-from');
 const dropdownCitiesFrom = formSearch.querySelector('.dropdown__cities-from');
@@ -6,8 +13,24 @@ const inputCitiesTo = formSearch.querySelector('.input__cities-to');
 const dropdownCitiesTo = formSearch.querySelector('.dropdown__cities-to');
 const inputDateDepart = formSearch.querySelector('.input__date-depart');
 
-const cities = ['Абенгуру', 'Джхунджхуну', 'Пунта Кардон', 'Готки', 'Лесной', 'Лион', 'Клагенфурт', 'Квекве',
-  'Беруни', 'Глендейл', 'Михара', 'Цюйцзин', 'Асуль', 'Накхон Си Тхаммарат', 'Бансвара', 'Эспо', 'Наро-Фоминск'];
+let cities = [];
+
+// Функция получения данных
+
+const getData = (url, successHandler) => {
+  const xhr = new XMLHttpRequest();
+  xhr.responseType = 'json';
+
+  xhr.addEventListener('readystatechange', () => {
+    if (xhr.readyState !== 4) return;
+    if (xhr.status === 200) {
+      successHandler(xhr.response);
+    }
+  });
+
+  xhr.open('GET', url);
+  xhr.send();
+};
 
 // Функция вставки городов в инпуты
 
@@ -74,4 +97,20 @@ inputCitiesFrom.addEventListener('blur', (evt) => {
 
 inputCitiesTo.addEventListener('blur', (evt) => {
   hideCitiesCondition(evt, dropdownCitiesTo);
+});
+
+// Получаем данные и закидываем в массив городов
+
+getData(AVIASALES_JSON, (data) => {
+  const loadedCities = [];
+  data.forEach((item) => {
+    loadedCities.push(item.name);
+  });
+  cities = loadedCities.filter((city) => city);
+});
+
+// Получаем данные по домашке
+
+getData(HOMEWORK_GET, (data) => {
+  console.log(data.current_depart_date_prices[0]);
 });
