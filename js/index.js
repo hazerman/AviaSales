@@ -130,18 +130,25 @@ const renderCheap = (data, date) => {
 formSearch.addEventListener('submit', (evt) => {
   evt.preventDefault();
 
-  const formData = {
-    from: cities.find((item) => inputCitiesFrom.value === item.name).code,
-    to: cities.find((item) => inputCitiesTo.value === item.name).code,
-    date: inputDateDepart.value,
-  };
+  const findCityFrom = cities.find((item) => inputCitiesFrom.value === item.name);
+  const findCityTo = cities.find((item) => inputCitiesTo.value === item.name);
 
-  const requestData = `?depart_date=${formData.date}&origin=${formData.from}&destination=`
-  + `${formData.to}&one_way=true&token=${SECRET_KEY}`;
+  if (findCityFrom !== undefined && findCityTo !== undefined) {
+    const formData = {
+      from: findCityFrom.code,
+      to: findCityTo.code,
+      date: inputDateDepart.value,
+    };
 
-  getData(PRICE_CALENDAR + requestData, (response) => {
-    renderCheap(response, formData.date);
-  });
+    const requestData = `?depart_date=${formData.date}&origin=${formData.from}&destination=`
+    + `${formData.to}&one_way=true&token=${SECRET_KEY}`;
+
+    getData(PRICE_CALENDAR + requestData, (response) => {
+      renderCheap(response, formData.date);
+    });
+    return 0;
+  }
+  return console.log('Такого города нет в списке');
 });
 
 // Получаем данные и закидываем в массив городов
