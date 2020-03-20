@@ -4,7 +4,6 @@ const AVIASALES_JSON_SERVER = 'http://api.travelpayouts.com/data/ru/cities.json'
 const AVIASALES_JSON = '../database/cities.json';
 const SECRET_KEY = 'da69997ffdd4a869ab4b4f86b68527fb';
 const PRICE_CALENDAR = 'http://min-prices.aviasales.ru/calendar_preload';
-const HOMEWORK_GET = 'http://min-prices.aviasales.ru/calendar_preload?origin=SVX&destination=KGD&depart_date=2020-05-25';
 
 const formSearch = document.querySelector('.form-search');
 const inputCitiesFrom = formSearch.querySelector('.input__cities-from');
@@ -56,15 +55,20 @@ dropdownCitiesTo.addEventListener('click', (evt) => {
 const showCities = (input, dropdown) => {
   dropdown.textContent = '';
   if (input.value) {
-    const filteredCities = cities.filter((city) => {
-      const cityLowerCase = city.toLowerCase();
-      return cityLowerCase.includes(input.value.toLowerCase());
+    const startWithCities = cities.filter((city) => {
+      const cityLowerCase = city.name.toLowerCase();
+      return cityLowerCase.startsWith(input.value.toLowerCase());
+    });
+    const filteredCities = startWithCities.sort((left, right) => {
+      if (left.name > right.name) return 1;
+      if (left.name < right.name) return -1;
+      return 0;
     });
     filteredCities.forEach((city) => {
       const elementLi = document.createElement('li');
       elementLi.className = 'dropdown__city';
       elementLi.setAttribute('tabindex', 0);
-      elementLi.textContent = city;
+      elementLi.textContent = city.name;
       dropdown.append(elementLi);
     });
   }
@@ -99,18 +103,57 @@ inputCitiesTo.addEventListener('blur', (evt) => {
   hideCitiesCondition(evt, dropdownCitiesTo);
 });
 
+// Функция рендеринга самого дешевого рейса на нужную дату
+
+const renderCheapDay = (tickets) => {
+  console.log(tickets);
+};
+
+// Функция редеринга самых дешевых рейсов на другие даты
+
+const renderCheapYear = (tickets) => {
+  const filteredTickets = tickets.sort((smaller, bigger) => smaller.value - bigger.value);
+  console.log(filteredTickets);
+};
+
+// функция рендеринга рейсов
+
+const renderCheap = (data, date) => {
+  const cheapTickets = data.best_prices;
+  const cheapestTicket = cheapTickets.filter((item) => item.depart_date === date);
+  renderCheapDay(cheapestTicket);
+  renderCheapYear(cheapTickets);
+};
+
+// Обработчик сабмита формы
+
+formSearch.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+
+  const findCityFrom = cities.find((item) => inputCitiesFrom.value === item.name);
+  const findCityTo = cities.find((item) => inputCitiesTo.value === item.name);
+
+  if (findCityFrom !== undefined && findCityTo !== undefined) {
+    const formData = {
+      from: findCityFrom.code,
+      to: findCityTo.code,
+      date: inputDateDepart.value,
+    };
+
+    const requestData = `?depart_date=${formData.date}&origin=${formData.from}&destination=`
+    + `${formData.to}&one_way=true&token=${SECRET_KEY}`;
+
+    getData(PRICE_CALENDAR + requestData, (response) => {
+      renderCheap(response, formData.date);
+    });
+    return 0;
+  }
+  return console.log('Такого города нет в списке');
+});
+
 // Получаем данные и закидываем в массив городов
 
 getData(AVIASALES_JSON, (data) => {
-  const loadedCities = [];
-  data.forEach((item) => {
-    loadedCities.push(item.name);
-  });
-  cities = loadedCities.filter((city) => city);
-});
-
-// Получаем данные по домашке
-
-getData(HOMEWORK_GET, (data) => {
-  console.log(data.current_depart_date_prices[0]);
+  const loadedCities = data;
+  cities = loadedCities.filter((city) => city.name);
 });
